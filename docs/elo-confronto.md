@@ -12,7 +12,7 @@ Regola chiarita dal proprietario: le partite Excel costruiscono la base ELO senz
 | TIGRE | 162,0 | 162,0 | 0,0 |
 | CAVALLO | 154,8 | 154,8 | 0,0 |
 | GORILLA-BRACCONIERE | 132,8 | 132,8 | 0,0 |
-| ACQUILOTTO | 128,0 | 128,0 | 0,0 |
+| AQUILOTTO | 128,0 | 128,0 | 0,0 |
 | CHIRURGO | 127,5 | 127,5 | 0,0 |
 | GALLO | 115,5 | 115,5 | 0,0 |
 | LEONESSA | 109,8 | 109,8 | 0,0 |
