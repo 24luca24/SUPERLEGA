@@ -1,26 +1,58 @@
 {
-  "name": "superlega-app",
+  "name": "superlega",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:check": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx scripts/database.ts check",
+    "db:setup": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx scripts/database.ts setup",
+    "db:stage": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx scripts/database.ts stage",
+    "db:provision": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx scripts/database.ts provision",
+    "db:promote": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx scripts/database.ts promote",
+    "data:extract": "python3 scripts/extract_workbook.py",
+    "storage:setup": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx scripts/setup-s3.ts",
+    "data:elo": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx scripts/database.ts preview",
+    "db:verify": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx scripts/database.ts verify",
+    "test:smoke": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx scripts/smoke-auth.ts",
+    "data:compare-elo": "python3 scripts/compare_elo.py",
+    "db:recalculate": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx scripts/database.ts recalculate",
+    "test:live-db": "node --conditions=react-server --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx scripts/smoke-live-db.ts",
+    "test:scoreboard": "node --conditions=react-server --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx scripts/smoke-scoreboard.ts",
+    "db:referee": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx scripts/database.ts referee",
+    "storage:verify": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx scripts/verify-s3.ts",
+    "test:lan": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx scripts/smoke-lan.ts",
+    "icons:generate": "node scripts/generate-app-icons.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1171.0",
+    "@aws-sdk/s3-request-presigner": "^3.1171.0",
+    "lucide-react": "^1.75.0",
     "next": "16.4.6",
+    "pg": "^8.23.1",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.16",
     "@tailwindcss/turbopack": "4.3.3",
     "@types/node": "^20",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^3.2.7",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
+    "playwright": "^1.65.1",
     "tailwindcss": "4.3.3",
-    "typescript": "^5"
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   }
 }

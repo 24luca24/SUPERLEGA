@@ -1,0 +1,94 @@
+{
+  "ratingPolicy": "Excel: prestazione e risultato, senza sfida; nuove partite: regolamento completo",
+  "sourceSha256": "8c0ec5bf3295d79c793f25b65eb611fc58db6a2103de41628c731b8c71e686e2",
+  "ordering": "Ordine delle righe confermato dal proprietario",
+  "completedMatches": 30,
+  "excludedMatches": 10,
+  "events": 120,
+  "players": [
+    {
+      "legacyName": "AIRAGHI",
+      "username": "GORILLA-CAPOBRANCO",
+      "role": "striker",
+      "elo": 189.5
+    },
+    {
+      "legacyName": "VOLPARI",
+      "username": "BISCIONE",
+      "role": "striker",
+      "elo": 171
+    },
+    {
+      "legacyName": "PETILLO",
+      "username": "SIRENA",
+      "role": "striker",
+      "elo": 165
+    },
+    {
+      "legacyName": "CILIBERTO",
+      "username": "TIGRE",
+      "role": "striker",
+      "elo": 162
+    },
+    {
+      "legacyName": "BOTARELLI",
+      "username": "CAVALLO",
+      "role": "defender",
+      "elo": 154.8
+    },
+    {
+      "legacyName": "CHIODINI",
+      "username": "GORILLA-BRACCONIERE",
+      "role": "defender",
+      "elo": 132.8
+    },
+    {
+      "legacyName": "TARENZI",
+      "username": "ACQUILOTTO",
+      "role": "striker",
+      "elo": 128
+    },
+    {
+      "legacyName": "BAGGETTO",
+      "username": "CHIRURGO",
+      "role": "defender",
+      "elo": 127.5
+    },
+    {
+      "legacyName": "TRENTADUE",
+      "username": "GALLO",
+      "role": "defender",
+      "elo": 115.5
+    },
+    {
+      "legacyName": "BOLGIANI",
+      "username": "LEONESSA",
+      "role": "defender",
+      "elo": 109.8
+    },
+    {
+      "legacyName": "TAGLIAFERRI",
+      "username": "BLATTA",
+      "role": "defender",
+      "elo": 107.7
+    },
+    {
+      "legacyName": "BRESCIANI",
+      "username": "ORSO",
+      "role": "striker",
+      "elo": 107.5
+    },
+    {
+      "legacyName": "ASTEGIANO",
+      "username": "PANDA",
+      "role": "striker",
+      "elo": 101.5
+    },
+    {
+      "legacyName": "DEIDIER",
+      "username": "LUPO",
+      "role": "defender",
+      "elo": 86
+    }
+  ]
+}

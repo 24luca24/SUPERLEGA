@@ -1,0 +1,93 @@
+{
+  "sourceSha256": "8c0ec5bf3295d79c793f25b65eb611fc58db6a2103de41628c731b8c71e686e2",
+  "ordering": "Ordine delle righe confermato dal proprietario",
+  "completedMatches": 30,
+  "excludedMatches": 10,
+  "events": 120,
+  "players": [
+    {
+      "legacyName": "AIRAGHI",
+      "username": "GORILLA-CAPOBRANCO",
+      "role": "defender",
+      "elo": 382.8
+    },
+    {
+      "legacyName": "VOLPARI",
+      "username": "BISCIONE",
+      "role": "striker",
+      "elo": 291
+    },
+    {
+      "legacyName": "BOTARELLI",
+      "username": "CAVALLO",
+      "role": "defender",
+      "elo": 269.8
+    },
+    {
+      "legacyName": "CHIODINI",
+      "username": "GORILLA-BRACCONIERE",
+      "role": "striker",
+      "elo": 235
+    },
+    {
+      "legacyName": "PETILLO",
+      "username": "SIRENA",
+      "role": "striker",
+      "elo": 165
+    },
+    {
+      "legacyName": "CILIBERTO",
+      "username": "TIGRE",
+      "role": "striker",
+      "elo": 162
+    },
+    {
+      "legacyName": "TAGLIAFERRI",
+      "username": "BLATTA",
+      "role": "defender",
+      "elo": 92.7
+    },
+    {
+      "legacyName": "TARENZI",
+      "username": "ACQUILOTTO",
+      "role": "striker",
+      "elo": 73
+    },
+    {
+      "legacyName": "BAGGETTO",
+      "username": "CHIRURGO",
+      "role": "defender",
+      "elo": 67.5
+    },
+    {
+      "legacyName": "TRENTADUE",
+      "username": "GALLO",
+      "role": "defender",
+      "elo": 65.5
+    },
+    {
+      "legacyName": "BOLGIANI",
+      "username": "LEONESSA",
+      "role": "defender",
+      "elo": 59.8
+    },
+    {
+      "legacyName": "ASTEGIANO",
+      "username": "PANDA",
+      "role": "striker",
+      "elo": 21.5
+    },
+    {
+      "legacyName": "BRESCIANI",
+      "username": "ORSO",
+      "role": "striker",
+      "elo": 17.5
+    },
+    {
+      "legacyName": "DEIDIER",
+      "username": "LUPO",
+      "role": "defender",
+      "elo": 6
+    }
+  ]
+}

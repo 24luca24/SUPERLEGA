@@ -1,26 +1,93 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #0f1117;
+  --panel: #161b24;
+  --panel-soft: #1b2330;
+  --text-primary: #f8f3e8;
+  --text-muted: #b5bccc;
+  --accent: #e53935;
+  --accent-soft: #ff6b57;
+  --gold: #f4c95d;
+  --silver: #c9d1d9;
+  --bronze: #c68552;
+  --ok: #16a34a;
+  --danger: #dc2626;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-panel-soft: var(--panel-soft);
+  --color-text-primary: var(--text-primary);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-gold: var(--gold);
+  --color-silver: var(--silver);
+  --color-bronze: var(--bronze);
+  --color-ok: var(--ok);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-heading);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  background:
+    radial-gradient(circle at 20% 20%, #20293a 0%, transparent 40%),
+    radial-gradient(circle at 80% 5%, #381818 0%, transparent 35%),
+    var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-body), sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading), sans-serif;
+  letter-spacing: 0.04em;
+}
+
+.panel {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+}
+
+.ranking-bar {
+  outline: none;
+}
+
+.ranking-bar:hover rect:last-child,
+.ranking-bar:focus-visible rect:last-child {
+  filter: brightness(1.18);
+  stroke: var(--text-primary);
+  stroke-width: 1;
+}
+
+/* Insets keep controls clear of the notch and Home indicator in installed mode. */
+body {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+.superlega-shell {
+  padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+}
+
+.superlega-mobile-nav {
+  bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  left: calc(0.75rem + env(safe-area-inset-left, 0px));
+  right: calc(0.75rem + env(safe-area-inset-right, 0px));
+}
+
+@media (min-width: 48rem) {
+  .superlega-shell { padding-bottom: 1rem; }
 }

@@ -1,0 +1,123 @@
+{
+  "sourceSha256": "8c0ec5bf3295d79c793f25b65eb611fc58db6a2103de41628c731b8c71e686e2",
+  "completedMatches": 30,
+  "minimumPythonEloSeen": 86.0,
+  "differences": [
+    "Il Python non implementa la sfida per ruolo della regola 8.",
+    "Il Python non applica il limite inferiore zero."
+  ],
+  "players": [
+    {
+      "legacyName": "AIRAGHI",
+      "username": "GORILLA-CAPOBRANCO",
+      "role": "striker",
+      "currentElo": 189.5,
+      "pythonElo": 189.5,
+      "difference": 0.0
+    },
+    {
+      "legacyName": "VOLPARI",
+      "username": "BISCIONE",
+      "role": "striker",
+      "currentElo": 171,
+      "pythonElo": 171.0,
+      "difference": 0.0
+    },
+    {
+      "legacyName": "PETILLO",
+      "username": "SIRENA",
+      "role": "striker",
+      "currentElo": 165,
+      "pythonElo": 165.0,
+      "difference": 0.0
+    },
+    {
+      "legacyName": "CILIBERTO",
+      "username": "TIGRE",
+      "role": "striker",
+      "currentElo": 162,
+      "pythonElo": 162.0,
+      "difference": 0.0
+    },
+    {
+      "legacyName": "BOTARELLI",
+      "username": "CAVALLO",
+      "role": "defender",
+      "currentElo": 154.8,
+      "pythonElo": 154.8,
+      "difference": 0.0
+    },
+    {
+      "legacyName": "CHIODINI",
+      "username": "GORILLA-BRACCONIERE",
+      "role": "defender",
+      "currentElo": 132.8,
+      "pythonElo": 132.8,
+      "difference": 0.0
+    },
+    {
+      "legacyName": "TARENZI",
+      "username": "ACQUILOTTO",
+      "role": "striker",
+      "currentElo": 128,
+      "pythonElo": 128.0,
+      "difference": 0.0
+    },
+    {
+      "legacyName": "BAGGETTO",
+      "username": "CHIRURGO",
+      "role": "defender",
+      "currentElo": 127.5,
+      "pythonElo": 127.5,
+      "difference": 0.0
+    },
+    {
+      "legacyName": "TRENTADUE",
+      "username": "GALLO",
+      "role": "defender",
+      "currentElo": 115.5,
+      "pythonElo": 115.5,
+      "difference": 0.0
+    },
+    {
+      "legacyName": "BOLGIANI",
+      "username": "LEONESSA",
+      "role": "defender",
+      "currentElo": 109.8,
+      "pythonElo": 109.8,
+      "difference": 0.0
+    },
+    {
+      "legacyName": "TAGLIAFERRI",
+      "username": "BLATTA",
+      "role": "defender",
+      "currentElo": 107.7,
+      "pythonElo": 107.7,
+      "difference": 0.0
+    },
+    {
+      "legacyName": "BRESCIANI",
+      "username": "ORSO",
+      "role": "striker",
+      "currentElo": 107.5,
+      "pythonElo": 107.5,
+      "difference": 0.0
+    },
+    {
+      "legacyName": "ASTEGIANO",
+      "username": "PANDA",
+      "role": "striker",
+      "currentElo": 101.5,
+      "pythonElo": 101.5,
+      "difference": 0.0
+    },
+    {
+      "legacyName": "DEIDIER",
+      "username": "LUPO",
+      "role": "defender",
+      "currentElo": 86,
+      "pythonElo": 86.0,
+      "difference": 0.0
+    }
+  ]
+}

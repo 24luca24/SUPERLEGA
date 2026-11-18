@@ -39,3 +39,30 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local roster includes login cities/passwords
+/data/roster.local.json
+# Environment template is safe to version
+!.env.example
+
+/data/referee.local.json
+
+# Local credentials, private keys and machine-specific configuration
+*.local.json
+*.key
+*.p12
+*.pfx
+/.aws/
+/.codex/
+/.agents/
+
+# Local caches, logs and database backups
+__pycache__/
+*.py[cod]
+*.log
+*.sql.gz
+*.dump
+/backups/
+/tmp/
+/test-results/
+/playwright-report/
