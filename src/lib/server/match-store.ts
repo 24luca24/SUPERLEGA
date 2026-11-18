@@ -42,29 +42,44 @@ async function requireActor(client: MatchClient, actor: MatchActor) {
   // Recheck the stored role instead of accepting client-supplied privileges.
   return { id: actor.id, is_admin: user.rows[0].is_admin && user.rows[0].username_norm === "roberto" };
 }
-async function hydrate(client: MatchClient, row: MatchRow): Promise<LiveMatch> {
-  const goals = await client.query<{ player_id: string; goals: number }>("select player_id,goals from public.match_goals where match_id=$1", [row.id]);
-  const undo = await client.query(`select a.id from public.match_actions a where a.match_id=$1 and a.kind='goal'
-    and not exists(select 1 from public.match_actions u where u.undo_of=a.id) limit 1`, [row.id]);
-  const events = await client.query<EventRow>("select * from public.elo_events where match_id=$1 order by player_id", [row.id]);
+interface MatchDetails { goals: { player_id: string; goals: number }[]; can_undo: boolean; events: EventRow[] }
+function hydratedMatch(row: MatchRow, details: MatchDetails): LiveMatch {
   return {
     id: row.id, status: row.status, ratingPolicy: row.rating_policy, historyOrder: row.history_order??undefined,
     home: { strikerId: row.home_striker_id, defenderId: row.home_defender_id },
     away: { strikerId: row.away_striker_id, defenderId: row.away_defender_id },
-    goals: Object.fromEntries(goals.rows.map((g) => [g.player_id, g.goals])),
+    goals: Object.fromEntries(details.goals.map((g) => [g.player_id, g.goals])),
     createdAt: new Date(row.created_at).toISOString(), completedAt: row.completed_at ? new Date(row.completed_at).toISOString() : undefined,
     version: row.version, seasonId: row.season_id, scorekeeperId: row.scorekeeper_user_id ?? undefined,
-    canUndo: row.status === "live" && !!undo.rowCount,
-    eloDeltas: events.rows.map((e) => ({ playerId: e.player_id, eloBefore: Number(e.elo_before), performanceResultDelta: Number(e.performance_result_delta), challengeDelta: Number(e.challenge_delta), totalRequestedDelta: Number(e.total_requested_delta), eloAfter: Number(e.elo_after), actualDelta: Number(e.actual_delta) })),
+    canUndo: row.status === "live" && details.can_undo,
+    eloDeltas: details.events.map((e) => ({ playerId: e.player_id, eloBefore: Number(e.elo_before), performanceResultDelta: Number(e.performance_result_delta), challengeDelta: Number(e.challenge_delta), totalRequestedDelta: Number(e.total_requested_delta), eloAfter: Number(e.elo_after), actualDelta: Number(e.actual_delta) })),
   };
 }
+const matchDetailsSql = (id: string) => `
+  coalesce((select jsonb_agg(jsonb_build_object('player_id',g.player_id,'goals',g.goals)) from public.match_goals g where g.match_id=${id}), '[]'::jsonb) as goals,
+  exists(select 1 from public.match_actions a where a.match_id=${id} and a.kind='goal'
+    and not exists(select 1 from public.match_actions u where u.undo_of=a.id)) as can_undo,
+  coalesce((select jsonb_agg(to_jsonb(e) order by e.player_id) from public.elo_events e where e.match_id=${id}), '[]'::jsonb) as events`;
+async function hydrate(client: MatchClient, row: MatchRow): Promise<LiveMatch> {
+  const details = await client.query<MatchDetails>(`select ${matchDetailsSql('$1::uuid')}`, [row.id]);
+  return hydratedMatch(row, details.rows[0]);
+}
 export async function getMatchScreen(actor: MatchActor, pool: MatchDatabase = database()): Promise<MatchScreen> {
-  return transaction(pool, async (client) => {
-    const storedActor = await requireActor(client, actor);
-    const players = await client.query<PlayerRow>("select * from public.players order by animal");
-    const active = await client.query<MatchRow>("select * from public.matches where status in('draft','live') order by created_at asc limit 1");
-    return { canControl: storedActor.is_admin, players: playersFromRows(players.rows), match: active.rows[0] ? await hydrate(client, active.rows[0]) : null };
-  }, true);
+  const client = await pool.connect();
+  try {
+    // A single statement gives every spectator one consistent snapshot, without
+    // holding a connection across multiple network round trips or a read transaction.
+    const result = await client.query<MatchDetails & {is_admin: boolean; username_norm: string; players: PlayerRow[]; match: MatchRow|null}>(`
+      select u.is_admin,u.username_norm,
+        (select coalesce(jsonb_agg(to_jsonb(p) order by p.animal),'[]'::jsonb) from public.players p) as players,
+        row_to_json(m) as match, ${matchDetailsSql('m.id')}
+      from public.users u
+      left join lateral (select * from public.matches where status in('draft','live') order by created_at,id limit 1) m on true
+      where u.id=$1 and u.enabled`, [actor.id]);
+    const row = result.rows[0];
+    if (!row) throw new MatchError(401, "Accedi per gestire la partita.");
+    return {canControl: row.is_admin && row.username_norm === "roberto", players: playersFromRows(row.players), match: row.match ? hydratedMatch(row.match, row) : null};
+  } finally { client.release(); }
 }
 export async function createLiveMatch(actor: MatchActor, input: CreateLiveMatch, pool: MatchDatabase = database()): Promise<LiveMatch> {
   const ids = [input.home?.strikerId, input.home?.defenderId, input.away?.strikerId, input.away?.defenderId];

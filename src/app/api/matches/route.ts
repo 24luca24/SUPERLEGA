@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createLiveMatch, getMatchScreen, isUuid, MatchError } from "@/lib/server/match-store";
 import { matchActor, matchBody, matchResponseError } from "@/lib/server/match-http";
 export async function GET() {
-  try { return NextResponse.json(await getMatchScreen(await matchActor()), { headers: { "Cache-Control": "no-store" } }); }
+  try { return NextResponse.json(await getMatchScreen(await matchActor()), { headers: { "Cache-Control": "no-store", "X-Superlega-Live-Version": "2" } }); }
   catch (error) { return matchResponseError(error); }
 }
 export async function POST(request: Request) {

@@ -27,28 +27,48 @@ export function LiveScoreboard({ initial }: { initial: MatchScreen }) {
   const [selection, setSelection] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [syncError, setSyncError] = useState("");
   const [retry, setRetry] = useState<PendingSave | null>(null);
   const busy = useRef(false);
+  const operationRevision = useRef(0);
   const createId = useRef<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const find = (id: string) => players.find((player) => player.id === id);
   useEffect(() => {
-    if (canControl) return;
+    if (canControl && (retry || !["empty", "live"].includes(stage))) return;
     let active = true;
-    const timer = setInterval(() => {
-      if (document.visibilityState !== "visible") return;
-      fetch("/api/matches", {cache:"no-store"}).then(async (response) => {
-        if (!response.ok || !active) return;
-        const screen: MatchScreen = await response.json();
-        if (!active) return;
-        setPlayers(screen.players); setMatch(screen.match); setStage(screen.match ? "live" : "empty");
-      }).catch(() => undefined);
-    }, 3000);
-    return () => {active=false;clearInterval(timer);};
-  }, [canControl]);
+    let timer: ReturnType<typeof setTimeout>;
+    let controller: AbortController | undefined;
+    let failures = 0;
+    async function poll() {
+      if (!active) return;
+      if (document.visibilityState === "visible" && !busy.current) {
+        const revision = operationRevision.current;
+        controller = new AbortController();
+        const timeout = setTimeout(() => controller?.abort(), 10000);
+        try {
+          const response = await fetch("/api/matches", {cache:"no-store", signal:controller.signal});
+          if (response.status === 401) { router.replace("/login"); return; }
+          if (!response.ok) throw new Error("Live temporaneamente disconnesso. Riconnessione automatica…");
+          const screen: MatchScreen = await response.json();
+          if (active && !busy.current && revision === operationRevision.current) {
+            failures = 0; setSyncError("");
+            setPlayers(screen.players); setMatch(screen.match); setStage(screen.match ? "live" : "empty");
+          }
+        } catch {
+          if (active) { failures++; setSyncError("Live temporaneamente disconnesso. Riconnessione automatica…"); }
+        } finally { clearTimeout(timeout); }
+      }
+      // Schedule after completion: slow requests never accumulate on mobile.
+      if (active) timer = setTimeout(() => void poll(), Math.min(15000, 3000 * (1 + failures)) + Math.random() * 500);
+    }
+    timer = setTimeout(() => void poll(), Math.random() * 500);
+    return () => {active=false;clearTimeout(timer);controller?.abort();};
+  }, [canControl, stage, retry, router]);
 
   async function save(request: PendingSave) {
     if (busy.current) return;
+    operationRevision.current++;
     busy.current = true;
     setSaving(true); setError("");
     try {
@@ -91,6 +111,7 @@ export function LiveScoreboard({ initial }: { initial: MatchScreen }) {
   }
   async function beginSetup() {
     if (busy.current) return;
+    operationRevision.current++;
     busy.current = true; setRefreshing(true); setError("");
     try {
       const response = await fetch("/api/matches", { cache: "no-store", signal: AbortSignal.timeout(12000) });
@@ -108,9 +129,9 @@ export function LiveScoreboard({ initial }: { initial: MatchScreen }) {
   const homeTotal = match ? (match.goals[match.home.strikerId] ?? 0) + (match.goals[match.home.defenderId] ?? 0) : 0;
   const awayTotal = match ? (match.goals[match.away.strikerId] ?? 0) + (match.goals[match.away.defenderId] ?? 0) : 0;
   const tied = homeTotal === awayTotal;
-  const banner = error && <div className="panel space-y-3 border-red-400/50 p-4" role="alert"><p>{error}</p>{retry && <button type="button" disabled={saving} onClick={() => void save(retry)} className="rounded-xl bg-accent px-4 py-3 font-bold disabled:opacity-50">Riprova salvataggio</button>}</div>;
+  const banner = (error || syncError) && <div className="panel space-y-3 border-red-400/50 p-4" role="alert"><p>{error || syncError}</p>{retry && <button type="button" disabled={saving} onClick={() => void save(retry)} className="rounded-xl bg-accent px-4 py-3 font-bold disabled:opacity-50">Riprova salvataggio</button>}</div>;
 
-  if (stage === "empty" && !canControl) return <section className="panel p-6"><h1 className="text-4xl text-gold">Partita live</h1><p className="mt-3 text-text-muted">Nessuna partita in corso. La segnatura è riservata all’arbitro Roberto.</p></section>;
+  if (stage === "empty" && !canControl) return <div className="space-y-4">{banner}<section className="panel p-6"><h1 className="text-4xl text-gold">Partita live</h1><p className="mt-3 text-text-muted">Nessuna partita in corso. La segnatura è riservata all’arbitro Roberto.</p></section></div>;
   if (stage === "empty") return <div className="space-y-4">{banner}<div className="flex min-h-64 items-center justify-center"><h1 className="sr-only">Partita live</h1><button type="button" disabled={refreshing} onClick={() => void beginSetup()} className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-4 text-lg font-bold text-white disabled:opacity-50">{refreshing ? <LoaderCircle className="animate-spin" size={22} /> : <Plus size={22} />}Crea partita</button></div></div>;
 
   if (stage === "setup") return <div className="space-y-4">

@@ -1,11 +1,23 @@
 import { spawn } from "node:child_process";
-import { chromium } from "playwright";
+import { chromium, type APIResponse, type BrowserContext } from "playwright";
 import { PGlite } from "@electric-sql/pglite";
 import { readFileSync, readdirSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import assert from "node:assert/strict";
 import { createLiveMatch, getMatchScreen, changeLiveMatch, correctResult, getResultsScreen, MatchError, type MatchClient, type MatchDatabase } from "../src/lib/server/match-store";
 import type { CreateLiveMatch, LiveMatchAction, MatchScreen, ResultScreen, ResultCorrection } from "../src/types/live-match";
+
+// Production cookies are Secure. Permit only this loopback test harness to
+// transfer its own login cookie over HTTP to the local production server.
+async function localProductionCookie(context: BrowserContext, response: APIResponse, origin: string) {
+  const url = new URL(origin);
+  if (url.protocol !== "http:" || !["127.0.0.1", "localhost"].includes(url.hostname)) return;
+  const token = response.headers()["set-cookie"]?.match(/superlega_session=([a-f0-9]{64})/i)?.[1];
+  if (token) {
+    await context.clearCookies({name:"superlega_session"});
+    await context.addCookies([{name:"superlega_session",value:token,domain:url.hostname,path:"/",httpOnly:true,secure:false,sameSite:"Lax"}]);
+  }
+}
 
 async function main() {
   const origin = process.env.SMOKE_ORIGIN ?? "http://127.0.0.1:3100";
@@ -28,6 +40,7 @@ async function main() {
     const referee:{username:string;password:string}=JSON.parse(readFileSync("data/referee.local.json","utf8"));
     const login=await context.request.post(`${origin}/api/auth/login`,{form:referee,headers:{origin},maxRedirects:0});
     assert.equal(login.status(),303);authenticated=true;
+    await localProductionCookie(context,login,origin);
     const real=await context.request.get(`${origin}/api/matches`);assert.equal(real.status(),200);
     const screen:MatchScreen=await real.json();assert(screen.canControl,"Account arbitro non configurato.");
     assert(!screen.match,"C’è una partita reale in corso: prova interfaccia rinviata per non interferire.");
@@ -114,14 +127,31 @@ async function main() {
     const viewer=await browser.newContext({viewport:{width:390,height:844}});
     try{
       const logged=await viewer.request.post(`${origin}/api/auth/login`,{form:{username:regular.username,password:regular.city},headers:{origin},maxRedirects:0});assert.equal(logged.status(),303);
+      await localProductionCookie(viewer,logged,origin);
       assert.equal((await viewer.request.get(`${origin}/api/results`)).status(),403);
       assert.equal((await viewer.request.post(`${origin}/api/matches`,{headers:{origin},data:{id:randomUUID(),home:{strikerId:strikers[0].id,defenderId:defenders[0].id},away:{strikerId:strikers[1].id,defenderId:defenders[1].id}}})).status(),403);
       const watching=await viewer.newPage();
-      await watching.route("**/api/matches",async(route)=>{await route.fulfill({status:200,json:await getMatchScreen(observer,pool)});});
-      await watching.goto(`${origin}/partita`);await watching.getByLabel("Squadra A 1, Squadra B 0",{exact:true}).waitFor({timeout:12000});
+      let activeReads=0, maxActiveReads=0, readerCalls=0;
+      await watching.route("**/api/matches",async(route)=>{
+        activeReads++;maxActiveReads=Math.max(maxActiveReads,activeReads);readerCalls++;
+        try {
+          if(readerCalls===1){await route.fulfill({status:503,json:{error:"Temporary database outage"}});return;}
+          // Longer than the polling interval: the next read must wait for this one.
+          await new Promise((resolve)=>setTimeout(resolve,4000));
+          await route.fulfill({status:200,json:await getMatchScreen(observer,pool)});
+        } finally {activeReads--;}
+      });
+      await watching.goto(`${origin}/partita`);
+      await watching.getByRole("alert").filter({hasText:"Riconnessione automatica"}).waitFor();
+      await watching.getByLabel("Squadra A 1, Squadra B 0",{exact:true}).waitFor({timeout:20000});
+      assert.equal(maxActiveReads,1,"Il polling non deve sovrapporre richieste lente.");
+      await watching.getByRole("alert").filter({hasText:"Riconnessione automatica"}).waitFor({state:"hidden",timeout:15000});
       assert.equal(await watching.getByRole("button",{name:/Aggiungi un gol|Togli un gol|Crea partita/}).count(),0);
       await viewer.request.post(`${origin}/api/auth/logout`,{headers:{origin},maxRedirects:0});
-    }finally{await viewer.close();}
+    }finally{
+      await Promise.all(viewer.pages().map((tab)=>tab.unrouteAll({behavior:"wait"})));
+      await viewer.close();
+    }
 
     await finish.click();
     await page.getByRole("button", { name: "Riprendi partita", exact: true }).click();
@@ -150,6 +180,7 @@ async function main() {
     console.log("Browser mobile: arbitro, osservatore senza contatori, generatore reale, contatori, correzione ed eliminazione verificati su PostgreSQL isolato. Nessun risultato di prova su Supabase.");
   } finally {
     if (authenticated) await context.request.post(`${origin}/api/auth/logout`, { headers: { origin }, maxRedirects: 0 }).catch(() => undefined);
+    await Promise.all(context.pages().map((tab)=>tab.unrouteAll({behavior:"wait"})));
     await browser.close(); await sql.close(); server?.kill("SIGTERM");
   }
 }

@@ -18,5 +18,6 @@ export async function matchBody(request: Request): Promise<Record<string, unknow
 }
 export function matchResponseError(error: unknown) {
   if (error instanceof MatchError) return NextResponse.json({ error: error.message, match: error.match }, { status: error.status, headers: { "Cache-Control": "no-store" } });
-  return NextResponse.json({ error: "Salvataggio non riuscito. Riprova: la partita resta recuperabile." }, { status: 503 });
+  console.error("Match request failed", { code: (error as { code?: string })?.code ?? "unknown", type: error instanceof Error ? error.name : "unknown" });
+  return NextResponse.json({ error: "Connessione temporaneamente non disponibile. Riprova: la partita resta recuperabile." }, { status: 503, headers: { "Cache-Control": "no-store", "Retry-After": "3" } });
 }

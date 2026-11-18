@@ -33,6 +33,25 @@ beforeEach(async () => { await sql.exec("delete from public.result_changes; dele
 afterAll(async () => { await sql?.close(); });
 
 describe("partita live su PostgreSQL", () => {
+  it("serves ten spectators with one consistent query each and checks stored permissions", async () => {
+    const match = await createLiveMatch(owner, { id: randomUUID(), ...lineup }, pool);
+    await changeLiveMatch(owner, match.id, goal(0), pool);
+    const query = vi.fn(client.query);
+    const release = vi.fn();
+    const readers: MatchDatabase = { async connect() { return {query: query as unknown as MatchClient["query"], release}; } };
+    const screens = await Promise.all(Array.from({length: 10}, () => getMatchScreen({...other, is_admin: true}, readers)));
+    expect(query).toHaveBeenCalledTimes(10);
+    expect(release).toHaveBeenCalledTimes(10);
+    for (const screen of screens) {
+      expect(screen.canControl).toBe(false);
+      expect(screen.match?.goals[ids[0]]).toBe(1);
+      expect(screen.match?.version).toBe(1);
+    }
+    await sql.query("update public.users set enabled=false where id=$1", [other.id]);
+    try { await expect(getMatchScreen(other, readers)).rejects.toThrow(/Accedi/); }
+    finally { await sql.query("update public.users set enabled=true where id=$1", [other.id]); }
+    expect(release).toHaveBeenCalledTimes(11);
+  });
   it("parte senza partita, crea quattro contatori e riprende i gol dal DB", async () => {
     expect((await getMatchScreen(owner, pool)).match).toBeNull();
     const input = { id: randomUUID(), ...lineup };

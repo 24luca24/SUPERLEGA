@@ -151,3 +151,9 @@ L’immagine fornita `logo-superlega.PNG` è usata intera, senza deformazioni, p
 `src/app/manifest.ts` definisce identità stabile `/`, nome Superlega, avvio da `/classifica`, scope `/` e apertura `standalone`. Il layout include metadati Apple e tema scuro; la navigazione tiene conto dei margini del notch e dell’indicatore Home. Nel profilo sono presenti le istruzioni per aggiungere l’app alla Home su iPhone/Android.
 
 Usare l’URL pubblico HTTPS dopo il deploy Vercel per l’installazione definitiva. Il collegamento LAN resta destinato alle prove sulla stessa rete. Le funzioni che leggono o salvano dati richiedono connessione: non è stata introdotta una cache offline di sessioni, classifiche o risultati.
+
+### Stabilità del live su Vercel
+
+Il pool applicativo usa al massimo 2 connessioni per istanza, chiude quelle inattive dopo 5 secondi e integra `attachDatabasePool` di Vercel. In produzione Vercel, gli endpoint Supabase condivisi `*.pooler.supabase.com:5432` passano automaticamente alla modalità transazione sulla porta 6543; gli script locali conservano la connessione configurata. Nessuno statement preparato nominato o lock di sessione viene usato. `vercel.json` colloca le funzioni a Dublino, vicino al progetto Supabase attuale (`eu-west-1`).
+
+Ogni lettura live usa una singola query con snapshot coerente e autorizzazioni rilette dal database. Il client aggiorna dopo il completamento della richiesta precedente, sospende le letture a pagina nascosta e durante le scritture, applica timeout e attesa crescente dopo errori, mostrando la riconnessione automatica. Anche le finestre dell’arbitro si sincronizzano senza sovrascrivere un’azione appena salvata con una risposta precedente. Gli errori delle connessioni inattive vengono gestiti; i log contengono codici di errore, senza credenziali.

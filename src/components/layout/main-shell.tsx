@@ -41,6 +41,7 @@ export function MainShell({ children }: { children: ReactNode }) {
             return (
               <Link
                 key={link.href}
+                prefetch={false}
                 href={link.href}
                 className={`flex items-center gap-2 rounded-xl px-3 py-2 transition ${
                   active ? "bg-accent text-white" : "bg-panel-soft text-text-primary hover:bg-[#243145]"
@@ -76,7 +77,8 @@ export function MainShell({ children }: { children: ReactNode }) {
           return (
             <Link
               key={link.href}
-              href={link.href}
+              prefetch={false}
+                href={link.href}
               className={`flex min-w-14 flex-col items-center rounded-lg px-2 py-2 text-[11px] ${
                 active ? "bg-accent text-white" : "text-text-muted"
               }`}
